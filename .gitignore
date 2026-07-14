@@ -1,0 +1,29 @@
+node_modules/
+dist/
+.env
+.env.*
+*.log
+
+# Saved phone pairing (contains the PIN)
+apps/pc-bridge/data/
+
+# Android / Gradle
+.gradle/
+build/
+local.properties
+captures/
+*.apk
+*.aab
+
+# Signing keys and secrets (never commit these)
+*.jks
+*.keystore
+*.p12
+keystore.properties
+signing.properties
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

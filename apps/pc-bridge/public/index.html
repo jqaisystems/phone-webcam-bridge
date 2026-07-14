@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Phone Webcam Bridge</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="toolbar">
+        <div>
+          <h1>Phone Webcam Bridge</h1>
+          <p id="statusLine">Starting bridge...</p>
+        </div>
+        <div class="toolbar-actions">
+          <button id="refreshButton" type="button">Refresh</button>
+          <button id="disconnectButton" type="button">Disconnect</button>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <section class="panel connect-panel">
+          <h2>Phone</h2>
+          <div id="discoveredList" class="device-list"></div>
+
+          <label class="field">
+            <span>Manual host</span>
+            <input id="hostInput" type="text" placeholder="192.168.1.42:47888" />
+          </label>
+
+          <label class="field">
+            <span>Phone PIN</span>
+            <input id="pinInput" type="text" inputmode="numeric" placeholder="123456" />
+          </label>
+
+          <div class="button-row">
+            <button id="wifiConnectButton" type="button">Connect Wi-Fi</button>
+            <button id="scanButton" type="button">Scan network</button>
+            <button id="usbConnectButton" type="button">Connect USB</button>
+          </div>
+
+          <h2>Camera</h2>
+          <label class="field">
+            <span>Profile</span>
+            <select id="profileSelect">
+              <option value="smooth">HD 720p / 30 fps</option>
+              <option value="fhd">Full HD 1080p / 30 fps</option>
+              <option value="hd">HD 720p / 15 fps</option>
+              <option value="low">Low 360p / 15 fps</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Camera</span>
+            <select id="cameraSelect">
+              <option value="front">Front</option>
+              <option value="back">Back</option>
+            </select>
+          </label>
+
+          <label class="toggle">
+            <input id="mirrorInput" type="checkbox" checked />
+            <span>Mirror</span>
+          </label>
+
+          <label class="toggle">
+            <input id="torchInput" type="checkbox" />
+            <span>Torch</span>
+          </label>
+
+          <label class="toggle">
+            <input id="micInput" type="checkbox" />
+            <span>Phone mic</span>
+          </label>
+          <p class="mic-note muted">
+            Audio uses the PC mic by default. Phone mic is optional and needs VB-CABLE plus
+            headphones (<a href="https://vb-audio.com/Cable/" target="_blank" rel="noreferrer">setup</a>).
+          </p>
+
+          <label class="field">
+            <span>Zoom <span id="zoomValue" class="muted"></span></span>
+            <input id="zoomInput" type="range" min="1" max="1" step="0.05" value="1" disabled />
+          </label>
+
+          <label class="field">
+            <span>Exposure <span id="exposureValue" class="muted"></span></span>
+            <input id="exposureInput" type="range" min="0" max="0" step="1" value="0" disabled />
+          </label>
+        </section>
+
+        <section class="preview-panel">
+          <div class="preview-frame">
+            <img id="previewImage" alt="" />
+            <div id="previewOverlay" class="preview-overlay">Waiting for phone</div>
+          </div>
+
+          <p id="healthLine" class="health-line muted">
+            <span id="healthDot" class="health-dot"></span>
+            <span id="healthText">No stream</span>
+          </p>
+
+          <div class="obs-bar">
+            <label class="field obs-password">
+              <span>OBS password</span>
+              <input id="obsPasswordInput" type="password" placeholder="Optional" />
+            </label>
+            <button id="obsStartButton" type="button">Start OBS Camera</button>
+            <a id="obsSourceLink" href="/obs.html" target="_blank" rel="noreferrer">Open OBS Source</a>
+          </div>
+
+          <pre id="logBox" class="log-box"></pre>
+        </section>
+      </section>
+    </main>
+
+    <script src="/main.js" type="module"></script>
+  </body>
+</html>

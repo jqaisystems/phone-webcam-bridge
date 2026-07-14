@@ -1,0 +1,15 @@
+{
+  "name": "phone-webcam-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Private Android-to-Windows webcam bridge using Wi-Fi or USB plus OBS Virtual Camera.",
+  "workspaces": [
+    "apps/pc-bridge"
+  ],
+  "scripts": {
+    "dev": "npm --workspace apps/pc-bridge run dev",
+    "build": "npm --workspace apps/pc-bridge run build",
+    "start": "npm --workspace apps/pc-bridge run start",
+    "check": "npm --workspace apps/pc-bridge run check"
+  }
+}

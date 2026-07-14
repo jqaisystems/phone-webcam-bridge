@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Phone Webcam OBS Source</title>
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: #090a0d;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+      }
+
+      .stage {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        background: #090a0d;
+      }
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .overlay {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        color: #f7fafc;
+        background:
+          radial-gradient(circle at center, rgba(39, 70, 144, 0.18), transparent 38%),
+          #090a0d;
+        font-size: 34px;
+        font-weight: 700;
+        letter-spacing: 0;
+      }
+
+      .connected .overlay {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="stage" class="stage">
+      <img id="stream" alt="" src="/proxy/stream.mjpg" />
+      <div class="overlay">Waiting for phone camera</div>
+    </main>
+
+    <script>
+      const stage = document.getElementById("stage");
+      const stream = document.getElementById("stream");
+
+      let lastStartedAt = null;
+      let lastOnline = false;
+      let micWanted = false;
+
+      function reloadStream() {
+        stream.src = `/proxy/stream.mjpg?reload=${Date.now()}`;
+      }
+
+      async function poll() {
+        try {
+          const response = await fetch("/api/state", { cache: "no-store" });
+          const state = await response.json();
+          const status = state.phone?.lastStatus;
+          const online = Boolean(status?.online);
+          stage.classList.toggle("connected", online);
+
+          // The MJPEG <img> dies silently when the bridge restarts or the
+          // phone comes back; reload it on both transitions.
+          const startedAt = state.bridge?.startedAt ?? null;
+          if (lastStartedAt !== null && startedAt !== lastStartedAt) {
+            reloadStream();
+          } else if (online && !lastOnline) {
+            reloadStream();
+          }
+          lastStartedAt = startedAt;
+          lastOnline = online;
+
+          micWanted = online && Boolean(status?.settings?.mic);
+          if (micWanted) {
+            startAudio();
+          } else {
+            stopAudio();
+          }
+        } catch {
+          stage.classList.remove("connected");
+          lastOnline = false;
+          micWanted = false;
+          stopAudio();
+        }
+      }
+
+      stream.addEventListener("error", () => {
+        stage.classList.remove("connected");
+        setTimeout(() => {
+          stream.src = `/proxy/stream.mjpg?reload=${Date.now()}`;
+        }, 1200);
+      });
+
+      setInterval(poll, 1200);
+      poll();
+
+      // ---- Phone microphone player ------------------------------------------
+      // Pulls the endless-WAV PCM stream and plays it through Web Audio. Because
+      // the OBS browser source is configured with reroute_audio, whatever this
+      // page plays lands in the OBS mixer (then goes to the monitoring device).
+      const SAMPLE_RATE = 48000;
+      const TARGET_BUFFER_SEC = 0.12; // jitter buffer
+      const MAX_BUFFER_SEC = 0.3; // drop when clock drift piles up
+
+      let audioContext = null;
+      let audioAbort = null;
+      let audioRunning = false;
+      let playHead = 0;
+
+      async function startAudio() {
+        if (audioRunning) {
+          return;
+        }
+        audioRunning = true;
+
+        audioContext = audioContext || new AudioContext({ sampleRate: SAMPLE_RATE });
+        await audioContext.resume().catch(() => {});
+        playHead = audioContext.currentTime + TARGET_BUFFER_SEC;
+
+        while (audioRunning && micWanted) {
+          audioAbort = new AbortController();
+          try {
+            const response = await fetch(`/proxy/audio.wav?reload=${Date.now()}`, {
+              signal: audioAbort.signal,
+              cache: "no-store"
+            });
+            if (!response.ok || !response.body) {
+              throw new Error(`audio HTTP ${response.status}`);
+            }
+            const reader = response.body.getReader();
+            let skipped = 0;
+            let pending = new Uint8Array(0);
+
+            playHead = audioContext.currentTime + TARGET_BUFFER_SEC;
+
+            while (audioRunning) {
+              const { value, done } = await reader.read();
+              if (done) {
+                break;
+              }
+              let bytes = value;
+              if (skipped < 44) {
+                const take = Math.min(44 - skipped, bytes.length);
+                bytes = bytes.subarray(take);
+                skipped += take;
+              }
+              if (!bytes.length) {
+                continue;
+              }
+
+              // Keep 16-bit alignment across chunk boundaries.
+              const merged = new Uint8Array(pending.length + bytes.length);
+              merged.set(pending, 0);
+              merged.set(bytes, pending.length);
+              const usable = merged.length - (merged.length % 2);
+              pending = merged.subarray(usable);
+              if (!usable) {
+                continue;
+              }
+
+              const samples = new Int16Array(merged.buffer.slice(0, usable));
+              enqueuePcm(samples);
+            }
+          } catch {
+            // Connection dropped; retry below.
+          }
+          if (audioRunning && micWanted) {
+            await new Promise((resolve) => setTimeout(resolve, 1200));
+          }
+        }
+      }
+
+      function enqueuePcm(samples) {
+        const now = audioContext.currentTime;
+        // Underrun: restart the buffer window instead of scheduling in the past.
+        if (playHead < now) {
+          playHead = now + TARGET_BUFFER_SEC;
+        }
+        // Drift overflow: skip this chunk to pull latency back down.
+        if (playHead - now > MAX_BUFFER_SEC) {
+          return;
+        }
+
+        const buffer = audioContext.createBuffer(1, samples.length, SAMPLE_RATE);
+        const channel = buffer.getChannelData(0);
+        for (let i = 0; i < samples.length; i++) {
+          channel[i] = samples[i] / 32768;
+        }
+        const source = audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioContext.destination);
+        source.start(playHead);
+        playHead += buffer.duration;
+      }
+
+      function stopAudio() {
+        if (!audioRunning) {
+          return;
+        }
+        audioRunning = false;
+        audioAbort?.abort();
+      }
+    </script>
+  </body>
+</html>
