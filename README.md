@@ -2,6 +2,8 @@
 
 Private Android-to-Windows webcam bridge for meetings. The phone streams camera frames over Wi-Fi or USB, the PC bridge normalizes the feed, and OBS Virtual Camera exposes it to Zoom, Google Meet, Teams, and similar apps.
 
+![Phone Webcam Bridge demo](docs/demo.gif)
+
 ## What is included
 
 - `apps/android`: Android Kotlin + CameraX app with MJPEG stream server.
