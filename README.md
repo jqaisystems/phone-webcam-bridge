@@ -11,7 +11,14 @@ Private Android-to-Windows webcam bridge for meetings. The phone streams camera 
 - `scripts`: Windows helper scripts for checks, USB forwarding, and running the bridge.
 - `docs`: setup, meeting workflow, API, and troubleshooting notes.
 
-## Quick start on this PC
+## Requirements and quick start
+
+Use a Windows PC with Node.js and npm, OBS Studio with Virtual Camera, and
+an Android phone. Install Android Studio and its SDK/platform tools to build
+the app; USB mode also needs adb and phone USB debugging. See
+[Android build setup](docs/ANDROID_BUILD.md) and [the user guide](docs/USER_GUIDE.md).
+
+Run these commands from the repository root:
 
 ```powershell
 .\scripts\check-environment.ps1
@@ -27,13 +34,13 @@ http://127.0.0.1:47889
 
 ## Working from a new location
 
-- USB cable is the always-works mode: plug in, click `Connect USB`. The bridge sets up adb forwarding automatically.
-- Wi-Fi: after pairing once, the bridge remembers the phone and PIN and reconnects automatically on any network (UDP discovery plus an active subnet scan when broadcasts are blocked).
+- For USB mode, enable phone USB debugging and authorize the PC, then click `Connect USB`. The bridge sets up adb forwarding when adb is available.
+- Wi-Fi: keep the phone and PC on a network that allows device-to-device traffic. Saved pairing, UDP discovery and subnet scanning help reconnect; guest isolation and firewall rules can prevent discovery.
 - Full checklist: [Troubleshooting](docs/TROUBLESHOOTING.md#new-location-checklist).
 
 ## Android build
 
-This machine currently needs Android tooling installed before the phone app can be built. Install Android Studio, open `apps/android`, let Gradle sync, then run the app on your Android phone.
+Install Android Studio and the SDK components listed in [Android build setup](docs/ANDROID_BUILD.md). Open `apps/android`, let Gradle sync, then build and run the app on your phone.
 
 The phone app shows:
 
