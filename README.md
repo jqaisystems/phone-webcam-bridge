@@ -82,3 +82,7 @@ Then start OBS Virtual Camera and choose `OBS Virtual Camera` in your meeting ap
 Video is sent on its own, so meeting audio comes from the PC mic by default. To use the
 phone microphone instead, install VB-CABLE and route the audio through OBS: full steps in
 [Phone microphone setup](docs/PHONE_MIC_SETUP.md). Use headphones to avoid echo.
+
+## Reuse and licensing
+
+This repository does not currently include an open-source licence. For reuse enquiries, [contact the maintainer](https://www.ai.joaoqueiros.com/contact). Third-party dependencies retain their own licences.
