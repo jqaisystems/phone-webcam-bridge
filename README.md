@@ -2,21 +2,20 @@
 
 Private Android-to-Windows webcam bridge for meetings. The phone streams camera frames over Wi-Fi or USB, the PC bridge normalizes the feed, and OBS Virtual Camera exposes it to Zoom, Google Meet, Teams, and similar apps.
 
-![Phone Webcam Bridge demo](docs/demo.gif)
+<picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/demo-poster.png"><img src="docs/demo.gif" alt="Phone Webcam Bridge demo"></picture>
 
-## What is included
+[Static preview](docs/demo-poster.png) · [Requirements](#requirements) · [Quick start](#quick-start) · [Documentation](#documentation) · [Support](#support)
 
-- `apps/android`: Android Kotlin + CameraX app with MJPEG stream server.
-- `apps/pc-bridge`: Node + TypeScript local bridge and control UI.
-- `scripts`: Windows helper scripts for checks, USB forwarding, and running the bridge.
-- `docs`: setup, meeting workflow, API, and troubleshooting notes.
+<a id="requirements-and-quick-start"></a>
 
-## Requirements and quick start
+## Requirements
 
 Use a Windows PC with Node.js and npm, OBS Studio with Virtual Camera, and
 an Android phone. Install Android Studio and its SDK/platform tools to build
 the app; USB mode also needs adb and phone USB debugging. See
 [Android build setup](docs/ANDROID_BUILD.md) and [the user guide](docs/USER_GUIDE.md).
+
+## Quick start
 
 Run these commands from the repository root:
 
@@ -31,6 +30,26 @@ Open the bridge:
 ```text
 http://127.0.0.1:47889
 ```
+
+## Documentation
+
+- [User guide (non-technical)](docs/USER_GUIDE.md)
+- [Phone microphone setup](docs/PHONE_MIC_SETUP.md)
+- [Meeting workflow](docs/MEETING_WORKFLOW.md)
+- [Android build setup](docs/ANDROID_BUILD.md)
+- [Local API](docs/API.md)
+- [Troubleshooting](docs/TROUBLESHOOTING.md)
+
+## Support
+
+Read [troubleshooting](docs/TROUBLESHOOTING.md), then open a [GitHub issue](https://github.com/jqaisystems/phone-webcam-bridge/issues/new/choose). Include Android/Windows versions, USB or Wi-Fi mode and a redacted error; leave pairing PINs and device addresses out.
+
+## What is included
+
+- `apps/android`: Android Kotlin + CameraX app with MJPEG stream server.
+- `apps/pc-bridge`: Node + TypeScript local bridge and control UI.
+- `scripts`: Windows helper scripts for checks, USB forwarding, and running the bridge.
+- `docs`: setup, meeting workflow, API, and troubleshooting notes.
 
 ## Working from a new location
 
@@ -63,12 +82,3 @@ Then start OBS Virtual Camera and choose `OBS Virtual Camera` in your meeting ap
 Video is sent on its own, so meeting audio comes from the PC mic by default. To use the
 phone microphone instead, install VB-CABLE and route the audio through OBS: full steps in
 [Phone microphone setup](docs/PHONE_MIC_SETUP.md). Use headphones to avoid echo.
-
-## References
-
-- [User guide (non-technical)](docs/USER_GUIDE.md)
-- [Phone microphone setup](docs/PHONE_MIC_SETUP.md)
-- [Meeting workflow](docs/MEETING_WORKFLOW.md)
-- [Android build setup](docs/ANDROID_BUILD.md)
-- [Local API](docs/API.md)
-- [Troubleshooting](docs/TROUBLESHOOTING.md)
